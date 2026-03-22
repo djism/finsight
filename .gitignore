@@ -1,0 +1,21 @@
+# Environment
+.env
+finsight-env/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Database
+*.db
+*.sqlite
+
+# Generated outputs
+backend/output/generated/
+*.pdf
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store

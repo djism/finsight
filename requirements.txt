@@ -1,0 +1,39 @@
+# Multi-agent
+crewai
+langgraph
+langchain
+langchain-groq
+langchain-community
+langchain-core
+langchain-text-splitters
+
+# Database
+sqlalchemy
+psycopg2-binary
+pgvector
+
+# API
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+
+# Tools
+requests
+beautifulsoup4
+sec-edgar-downloader
+newsapi-python
+
+# Output
+reportlab
+fpdf2
+
+# Testing
+pytest
+pytest-asyncio
+httpx
+
+# Utils
+python-dotenv
+certifi
+nest_asyncio
