@@ -1,0 +1,78 @@
+name: FinSight CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  lint:
+    name: Lint & Import Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+
+      - name: Check config imports
+        run: python -c "import config; print('✅ config OK')"
+
+      - name: Check schemas imports
+        run: python -c "from backend.schemas.memo import InvestmentMemoSchema, FetcherOutput, AnalystOutput, CriticOutput; print('✅ schemas OK')"
+
+      - name: Check API schemas imports
+        run: python -c "from backend.api.schemas import AnalyzeRequest, AnalyzeResponse; print('✅ API schemas OK')"
+
+      - name: Check DB models imports
+        run: python -c "from backend.db.models import InvestmentMemo, RawFiling, NewsArticle; print('✅ models OK')"
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_DB: finsight
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - run: pip install -r requirements.txt
+      - run: pytest tests/ -v --tb=short
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: finsight
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+
+  docker:
+    name: Docker Build Check
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -f Dockerfile.backend -t finsight-backend .
+      - name: Build frontend image
+        run: docker build -f Dockerfile.frontend -t finsight-frontend .
